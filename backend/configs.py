@@ -1,14 +1,5 @@
 import os
 
-# MODEL_API_URL = "http://10.191.84.38:8001/v1/chat/completions"
-# MODEL_API_KEY = "0ac39b39674d98074828448d4c798ce4"
-# MODEL_NAME = "DeepSeek-V3.1"
-
-MODEL_API_URL = "https://openai-proxy.miracleplus.com/v1/chat/completions"
-MODEL_API_KEY = "sk-ByqzGWjg3puXilvNbxmWsruk1eYDiMIV9rspVlfunucfkLpm"
-MODEL_NAME = "google/gemini-3-flash-preview"
-
-
 # --- 1. 场景池 (Scenarios) ---
 # 仅包含环境描述、开场白、背景设定
 SCENARIOS = {
