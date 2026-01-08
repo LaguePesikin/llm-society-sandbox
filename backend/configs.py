@@ -1,4 +1,11 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+MODEL_API_URL = os.getenv("MODEL_API_URL")
+MODEL_NAME = os.getenv("MODEL_NAME")
+MODEL_API_KEY = os.getenv("MODEL_API_KEY")
 
 # --- 1. 场景池 (Scenarios) ---
 # 仅包含环境描述、开场白、背景设定
