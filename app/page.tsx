@@ -12,7 +12,6 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// --- Types ---
 interface AgentConfig {
   name: string;
   role: string;
@@ -31,16 +30,15 @@ interface MetaData {
   agents: Record<string, AgentConfig>;
 }
 
-// 一个会话的完整配置
 interface SessionConfig {
   scenarioId: string;
-  agentIds: string[]; // 选中的人物ID列表
+  agentIds: string[];
   history: Message[];
 }
 
 interface Message {
   id: string;
-  agentId: string; // 'context' 或 agentId
+  agentId: string;
   content: string;
   thought?: string;
 }
@@ -53,28 +51,20 @@ const STYLE_MAP: Record<string, { color: string; icon: React.ReactNode }> = {
 };
 
 export default function LLMSociety() {
-  // --- Data State ---
   const [meta, setMeta] = useState<MetaData | null>(null);
   
-  // --- UI State ---
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   
-  // 当前选中的场景 ID（用于左侧高亮）
   const [selectedScenarioId, setSelectedScenarioId] = useState<string | null>(null);
   
-  // 配置阶段：当前选中的 Agent IDs
   const [selectedAgentIds, setSelectedAgentIds] = useState<string[]>([]);
 
-  // 运行阶段：Session Cache
-  // Key = scenarioId (为了简化，每个场景只能存一个活跃 Session，切换场景即切换 Session)
-  // 如果想支持同一场景不同人物配置，Key 需要更复杂，这里先简单对应
   const [sessions, setSessions] = useState<Record<string, SessionConfig>>({});
 
   const [isThinking, setIsThinking] = useState(false);
   const [autoPlay, setAutoPlay] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // 1. Fetch MetaData
   useEffect(() => {
     fetch('http://localhost:8000/meta')
       .then(res => res.json())
@@ -85,16 +75,13 @@ export default function LLMSociety() {
       });
   }, []);
 
-  // 当前活跃的 Session（如果已经创建了）
   const activeSession = selectedScenarioId ? sessions[selectedScenarioId] : null;
   const activeScenarioConfig = (selectedScenarioId && meta) ? meta.scenarios[selectedScenarioId] : null;
 
-  // --- Scroll ---
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [sessions, selectedScenarioId, isThinking]);
 
-  // --- Auto Play ---
   useEffect(() => {
     let timeout: NodeJS.Timeout;
     if (autoPlay && !isThinking && activeSession) {
@@ -103,7 +90,6 @@ export default function LLMSociety() {
     return () => clearTimeout(timeout);
   }, [autoPlay, isThinking, sessions, selectedScenarioId]);
 
-  // --- Actions ---
 
   const toggleAgentSelection = (agentId: string) => {
     setSelectedAgentIds(prev => 
@@ -118,10 +104,9 @@ export default function LLMSociety() {
     
     const scenario = meta.scenarios[selectedScenarioId];
     
-    // 初始化 Session
     const newSession: SessionConfig = {
       scenarioId: selectedScenarioId,
-      agentIds: [...selectedAgentIds], // 快照
+      agentIds: [...selectedAgentIds],
       history: [{
         id: 'init',
         agentId: 'context',
@@ -139,7 +124,7 @@ export default function LLMSociety() {
         delete copy[selectedScenarioId];
         return copy;
       });
-      setSelectedAgentIds([]); // 重置选择
+      setSelectedAgentIds([]);
       setAutoPlay(false);
     }
   };
@@ -180,7 +165,7 @@ export default function LLMSociety() {
         body: JSON.stringify({
           scenarioId: activeSession.scenarioId,
           nextAgentId: nextAgentId,
-          participants: participants,  // 关键：传当前参与者所有ID
+          participants: participants,
           history: activeSession.history
             .filter(h => h.agentId !== 'context')
             .map(h => ({ agentId: h.agentId, content: h.content }))
